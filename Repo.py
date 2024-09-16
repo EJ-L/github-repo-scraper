@@ -76,7 +76,7 @@ class Repository:
         print(self.full_name)
         # count = 0 
         # find all commits with the help of pull request numbers
-        for pr_num in tqdm(self.fetch_pr_generator()):
+        for pr_num in self.fetch_pr_generator():
             # count += 1
             # if count > 3:
             #     print("break")
