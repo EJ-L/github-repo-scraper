@@ -7,8 +7,8 @@ import time
 def main():
     # repositories = []
     current_time = START_TIME
-    size = 0
-    count = 0
+    # size = 0
+    # count = 0
     # define the writer according to desired file format
     csv_writer = CSVWriter(file_name=f'github_repos_{START_TIME[0:4]}.csv')  # For CSV
     json_writer = JSONWriter(file_name=f'github_repos_{START_TIME[0:4]}.json')
@@ -28,9 +28,9 @@ def main():
         repo_data = scraper.parse_repositories(repo_data)
         # iterate through a generator
         for repo in repo_data:
-            count += 1
-            if count > 3:
-                break
+            # count += 1
+            # if count > 3:
+            #     break
             # download the repo
             if DOWNLOAD:
                 print("downloading")
