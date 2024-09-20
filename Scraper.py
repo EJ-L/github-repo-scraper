@@ -42,17 +42,43 @@ class GitHubScraper:
             print(current_page, len(data))
             current_page += 1
         return responses
+    
+    @staticmethod
+    def forked_or_no_license(full_name:str, token=TOKEN) -> bool:
+        forked = False
+        no_license = False        
+        
+        url = f"https://api.github.com/repos/{full_name}"
+        headers = {"Authorization": f"token {token}"} if token else {}
+        response = requests.get(url, headers=headers)
+        
+        if response.status_code == 200:
+            repo_data = response.json()
+            forked = repo_data['fork']
+            print("not forked")
+            if repo_data['license'] == 'null':
+                no_license = True
+                print("license DNE")
+            # print(f"The repository {full_name} size is {size_kb} KB.")
+        else:
+            print(f"Failed to retrieve repository info: {response.status_code} {response.reason}")
+            
+        return forked or no_license
+
+    
         
     def parse_repositories(self, repo_data: dict):
         repo = None
         for repo_item in repo_data:
             for item in repo_item:
-                repo = Repository(
-                    full_name=item['full_name'],
-                    name=item['name'],
-                    url=item['html_url'],
-                    stars=item['stargazers_count'],
-                    topics=item.get('topics', [])
-                )   
+                full_name = item['full_name']
+                if not GitHubScraper.forked_or_no_license(full_name):    
+                    repo = Repository(
+                        full_name=full_name,
+                        name=item['name'],
+                        url=item['html_url'],
+                        stars=item['stargazers_count'],
+                        topics=item.get('topics', [])
+                    )   
         
-                yield repo
+                    yield repo
