@@ -8,7 +8,7 @@ from tenacity import (
     stop_after_attempt,
     wait_random_exponential,
 )
-
+import random
 class Repository:
     def __init__(self, full_name:str, name:str, url:str, stars:str, topics:list):
         self.full_name = full_name
@@ -74,11 +74,11 @@ class Repository:
     def fetch_pr(self):
         # check the name of the current Repo
         print(self.full_name)
-        # count = 0 
+        count = 0 
         # find all commits with the help of pull request numbers
         for pr_num in self.fetch_pr_generator():
             # count += 1
-            # if count > 3:
+            # if count > 2:
             #     print("break")
             #     break
             # avoid exceeding limit
@@ -103,14 +103,16 @@ class Repository:
                 modification_list = self.fetch_modifications(commit['sha'])
                 info = {
                     "pull_request_num": pr_num,
-                    "commit sha": commit['sha'],
+                    "commit_sha": commit['sha'],
                     "author": commit['commit']['author']['name'],
                     "message": commit['commit']['message'],
                     "date": commit['commit']['author']['date'],
                     "modifications": modification_list
                 }
+                # print(info['pull_request_num'], info['message'])
                 commits_details.append(info)
-                    
+                sleep_time = random.random()
+                time.sleep(sleep_time)
             self.pull_requests.append(commits_details)                       
                               
     def fetch_pr_generator(self):
