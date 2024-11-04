@@ -30,8 +30,8 @@ class JSONWriter:
     def __init__(self, file_name):
         self.file_name = file_name
         self.first_item = True
-        self.file = open(self.file_name, 'w', encoding='utf-8')
-        self.file.write('[')  # Start the JSON array
+        self.file = open(self.file_name, 'a', encoding='utf-8')
+        # self.file.write('[')  # Start the JSON array
 
     def write(self, repo):
         if not self.first_item:

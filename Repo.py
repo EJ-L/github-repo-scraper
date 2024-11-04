@@ -9,6 +9,8 @@ from tenacity import (
     wait_random_exponential,
 )
 import random
+import shutil 
+
 class Repository:
     def __init__(self, full_name:str, name:str, url:str, stars:str, topics:list):
         self.full_name = full_name
@@ -21,10 +23,13 @@ class Repository:
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def clone_from_github(self) -> None:
         try:
-            git.Repo.clone_from(self.url, self.full_name)
-            print(f"{self.full_name} downloaded successfully")
+            git.Repo.clone_from(self.url, f"repo/{self.name}")
+            # source_dir = self.name
+            # dest_dir = "repo"
+            # shutil.move(source_dir, dest_dir)
+            # print(f"{self.full_name} downloaded successfully")
         except Exception as e:
-            print(f"Could not download file {self.full_name}")
+            print(f"Could not download file {self.name}")
             print(e)
             
     """Fetch the size of a GitHub repository using the GitHub API."""      
@@ -45,7 +50,6 @@ class Repository:
     def fetch_modifications(self, commit_sha):
         api_url = f"https://api.github.com/repos/{self.full_name}/commits/{commit_sha}"
         response = requests.get(api_url, headers=HEADERS)
-
         # Check if the response is successful
         if response.status_code != 200:
             print(f"Error: Unable to fetch commit details (Status Code: {response.status_code})")
@@ -74,7 +78,7 @@ class Repository:
     def fetch_pr(self):
         # check the name of the current Repo
         print(self.full_name)
-        count = 0 
+        # count = 0 
         # find all commits with the help of pull request numbers
         for pr_num in self.fetch_pr_generator():
             # count += 1
