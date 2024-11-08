@@ -43,6 +43,7 @@ class JSONWriter:
             "url": repo.url,
             "stars": repo.stars,
             "topics": repo.topics,
+            "creation_date": repo.creation_date,
             "pull_requests": repo.pull_requests
         }
         json.dump(json_data, self.file, indent=4)

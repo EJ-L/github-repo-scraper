@@ -1,6 +1,6 @@
 import git 
 import requests
-from config import TOKEN, HEADERS, SLEEP_TIME, PER_PAGE
+from config import *
 import time
 from tqdm import tqdm
 from tenacity import (
@@ -10,15 +10,16 @@ from tenacity import (
 )
 import random
 import shutil 
-
 class Repository:
-    def __init__(self, full_name:str, name:str, url:str, stars:str, topics:list):
+    def __init__(self, full_name:str, name:str, url:str, stars:str, topics:list, creation_date:str, headers: dict):
         self.full_name = full_name
         self.name = name
         self.url = url
         self.stars = stars
         self.topics = topics
         self.pull_requests = []
+        self.creation_date = creation_date
+        self.headers = headers
     
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def clone_from_github(self) -> None:
@@ -29,27 +30,14 @@ class Repository:
             # shutil.move(source_dir, dest_dir)
             # print(f"{self.full_name} downloaded successfully")
         except Exception as e:
+            logger.error(f"Could not download file -- repo: {self.full_name}")
             print(f"Could not download file {self.name}")
             print(e)
-            
-    """Fetch the size of a GitHub repository using the GitHub API."""      
-    def get_github_repo_size(full_name:str, token:str=TOKEN):
-        url = f"https://api.github.com/repos/{full_name}"
-        headers = {"Authorization": f"token {token}"} if token else {}
-        response = requests.get(url, headers=headers)
-        size_kb = 0
-        if response.status_code == 200:
-            repo_data = response.json()
-            size_kb = repo_data['size']
-            # print(f"The repository {full_name} size is {size_kb} KB.")
-        else:
-            print(f"Failed to retrieve repository info: {response.status_code} {response.reason}")
-        return size_kb
     
 
     def fetch_modifications(self, commit_sha):
         api_url = f"https://api.github.com/repos/{self.full_name}/commits/{commit_sha}"
-        response = requests.get(api_url, headers=HEADERS)
+        response = requests.get(api_url, headers=self.headers)
         # Check if the response is successful
         if response.status_code != 200:
             print(f"Error: Unable to fetch commit details (Status Code: {response.status_code})")
@@ -69,7 +57,8 @@ class Repository:
                 "deletions": file['deletions'],
                 "patch": file['patch'] if 'patch' in file else "Patch: (binary or large diff)"            
             }
-            
+            sleep_time = random.random()
+            time.sleep(sleep_time)
             changes_list.append(changes)
            
         return changes_list 
@@ -79,7 +68,7 @@ class Repository:
         # check the name of the current Repo
         print(self.full_name)
         # count = 0 
-        # find all commits with the help of pull request numbers
+        # find all commits with the help of pull request numbersx
         for pr_num in self.fetch_pr_generator():
             # count += 1
             # if count > 2:
@@ -90,11 +79,12 @@ class Repository:
             
             # to get the commit info
             api_url = f"https://api.github.com/repos/{self.full_name}/pulls/{pr_num}/commits"
-            response = requests.get(api_url, headers=HEADERS)
+            response = requests.get(api_url, headers=self.headers)
 
             # check if the response is successful
             if response.status_code != 200:
-                print(f"Error: Unable to fetch pull request commits (Status Code: {response.status_code})")
+                # print(f"Error: Unable to fetch pull request commits (Status Code: {response.status_code})")
+                logger.error(f"Unable to fetch pull request commits -- repo:{self.full_name}")
                 return
 
             # json conversion
@@ -115,7 +105,7 @@ class Repository:
                 }
                 # print(info['pull_request_num'], info['message'])
                 commits_details.append(info)
-                sleep_time = random.random()
+                sleep_time = random.random() * 2
                 time.sleep(sleep_time)
             self.pull_requests.append(commits_details)                       
                               
@@ -138,11 +128,12 @@ class Repository:
                 "page": page
             }
                 
-            response = requests.get(api_url, headers=HEADERS, params=query_params)
+            response = requests.get(api_url, headers=self.headers, params=query_params)
 
             # check if the response is successful
             if response.status_code != 200:
-                print(f"Error: Unable to fetch pull requests (Status Code: {response.status_code})")
+                logger.error(f"Unable to fetch pull request commits -- repo:{self.full_name}")
+                # print(f"Error: Unable to fetch pull requests (Status Code: {response.status_code})")
                 break
 
             # json format conversion
