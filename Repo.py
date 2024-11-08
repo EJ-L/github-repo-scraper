@@ -70,10 +70,10 @@ class Repository:
         count = 0 
         # find all commits with the help of pull request numbersx
         for pr_num in self.fetch_pr_generator():
-            count += 1
-            if count > 2:
-                print("break")
-                break
+            # count += 1
+            # if count > 2:
+            #     print("break")
+            #     break
             # avoid exceeding limit
             # time.sleep(SLEEP_TIME)
             
