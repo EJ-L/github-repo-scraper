@@ -42,6 +42,7 @@ def read_jsonl_file(filename):
                 data.append(line)
     except:
         data = []
+    print(data)
     return data
 
 def main(time_interval, token):
@@ -59,7 +60,7 @@ def main(time_interval, token):
     count = 0
     # define the writer according to desired file format
     # csv_writer = CSVWriter(file_name=f'repo_data/index.csv')  # For CSV
-    data = read_json_file(INDEX_FILE_PATH)
+    data = read_jsonl_file(INDEX_FILE_PATH)
     # headers = get_headers()
 
     while time_smaller_than(current_time, end_time):
