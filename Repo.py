@@ -57,7 +57,7 @@ class Repository:
                 "deletions": file['deletions'],
                 "patch": file['patch'] if 'patch' in file else "Patch: (binary or large diff)"            
             }
-            sleep_time = random.random()
+            sleep_time = random.random() * 0.5
             time.sleep(sleep_time)
             changes_list.append(changes)
            
@@ -67,13 +67,13 @@ class Repository:
     def fetch_pr(self):
         # check the name of the current Repo
         print(self.full_name)
-        # count = 0 
+        count = 0 
         # find all commits with the help of pull request numbersx
         for pr_num in self.fetch_pr_generator():
-            # count += 1
-            # if count > 2:
-            #     print("break")
-            #     break
+            count += 1
+            if count > 2:
+                print("break")
+                break
             # avoid exceeding limit
             # time.sleep(SLEEP_TIME)
             
@@ -105,7 +105,7 @@ class Repository:
                 }
                 # print(info['pull_request_num'], info['message'])
                 commits_details.append(info)
-                sleep_time = random.random() * 2
+                sleep_time = random.random() * 0.5
                 time.sleep(sleep_time)
             self.pull_requests.append(commits_details)                       
                               
