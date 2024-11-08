@@ -2,12 +2,13 @@ import dotenv
 import os
 import itertools
 import logging
+from time_list_generation import *
 
 dotenv.load_dotenv('token.env')
 TOKEN = os.getenv("TOKEN").split(',') if os.getenv("TOKEN") else []
 num_of_processes = len(TOKEN)
 token_cycle = itertools.cycle(TOKEN)
-time_intervals = [('2023-01-01T00:00:00+08:00', '2023-03-02T20:00:00+08:00'), ('2023-03-02T20:00:00+08:00', '2023-05-02T16:00:00+08:00'), ('2023-05-02T16:00:00+08:00', '2023-07-02T12:00:00+08:00'), ('2023-07-02T12:00:00+08:00', '2023-09-01T08:00:00+08:00'), ('2023-09-01T08:00:00+08:00', '2023-11-01T04:00:00+08:00'), ('2023-11-01T04:00:00+08:00', '2024-01-01T00:00:00+08:00')]
+time_intervals = time_list_generation(num_of_processes)
 
 # Configure the logger to write only to a file
 logging.basicConfig(
