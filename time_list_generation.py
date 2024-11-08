@@ -16,8 +16,8 @@ def time_list_generation(num_of_tokens):
     for _ in range(num_of_tokens):
         current_end = current_start + interval_duration
         # Use isoformat() to get the correct timezone format
-        start_str = current_start.isoformat()
-        end_str = current_end.isoformat()
+        start_str = current_start.strftime('%Y-%m-%dT%H:%M:%S') + current_start.strftime('%z')[:3] + ':' + current_start.strftime('%z')[3:]
+        end_str = current_end.strftime('%Y-%m-%dT%H:%M:%S') + current_end.strftime('%z')[:3] + ':' + current_end.strftime('%z')[3:]
         time_intervals.append((start_str, end_str))
         current_start = current_end
 

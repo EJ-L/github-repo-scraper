@@ -105,7 +105,7 @@ class Repository:
                 }
                 # print(info['pull_request_num'], info['message'])
                 commits_details.append(info)
-                sleep_time = random.random() * 0.5
+                sleep_time = random.random() * 0.65
                 time.sleep(sleep_time)
             self.pull_requests.append(commits_details)                       
                               

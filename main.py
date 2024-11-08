@@ -5,11 +5,8 @@ from Scraper import GitHubScraper
 import time
 import os
 import multiprocessing
-from multiprocessing import Pool, Lock
+from multiprocessing import Pool, Lock, Manager
 import requests
-
-lock = Lock()
-
 
 REPO_DATA_DIR = "repo_data"
 REPO_DIR = "repo"
@@ -19,11 +16,11 @@ DOWNLOAD = False
 # Function to ensure the repo_data directory exists
 def ensure_repo_data_dir_exists():
     if not os.path.exists(REPO_DATA_DIR):
-        os.makedirs(REPO_DATA_DIR)
+        os.makedirs(REPO_DATA_DIR, exist_ok=True)
         
 def ensure_repo_dir_exists():
     if not os.path.exists(REPO_DIR):
-        os.makedirs(REPO_DIR)
+        os.makedirs(REPO_DIR, exist_ok=True)
         
 def read_json_file(filename):
     try:
@@ -45,7 +42,7 @@ def read_jsonl_file(filename):
     print(data)
     return data
 
-def main(time_interval, token):
+def main(time_interval, token, lock):
     headers = {
         "Accept": "application/vnd.github.mercy-preview+json",
         "Authorization": f"token {token}",
@@ -98,8 +95,7 @@ def main(time_interval, token):
             if read:
                 continue
             
-            data.append(
-                {
+            new_entry = {
                     "full_name": repo.full_name,
                     "directory": f"repo/{repo.name}",
                     "json_location": f"repo_data/{repo.name}.json",
@@ -107,13 +103,12 @@ def main(time_interval, token):
                     "stars": repo.stars,
                     "repo_topics": repo.topics
                 }
-            )
             with lock:
                 with open(INDEX_FILE_PATH, "a") as f:
-                    for entry in data:
-                        json.dump(entry, f)
-                        f.write('\n')
-                        logger.info("write to index.jsonl")
+                    json.dump(new_entry, f)
+                    f.write('\n')
+                    logger.info("write to index.jsonl")
+                    
             repo.fetch_pr()
             time.sleep(3)
             # write to the csv
@@ -126,6 +121,8 @@ def main(time_interval, token):
 
 
 if __name__ == "__main__":
+    manager = Manager()
+    lock = manager.Lock()  # Create a shared lock
     with Pool(num_of_processes) as pool:
-        tasks = [(time_interval, token) for time_interval, token in zip(time_intervals, itertools.cycle(TOKEN))]
+        tasks = [(time_interval, token, lock) for time_interval, token in zip(time_intervals, itertools.cycle(TOKEN))]
         pool.starmap(main, tasks)
