@@ -11,7 +11,6 @@ import requests
 REPO_DATA_DIR = "repo_data"
 REPO_DIR = "repo"
 INDEX_FILE_PATH = os.path.join(REPO_DATA_DIR, "index.jsonl")
-DOWNLOAD = False
 
 # Function to ensure the repo_data directory exists
 def ensure_repo_data_dir_exists():
@@ -77,7 +76,13 @@ def main(time_interval, token, lock):
         repo_data = scraper.fetch_paginated_repositories()
         repo_data = scraper.parse_repositories(repo_data)
         for repo in repo_data:
-            json_writer = JSONWriter(file_name=f'repo_data/{repo.name}.json')
+            username, repo_name = repo.full_name.split("/")
+            if username == repo_name:
+                formatted_username = f"username_{username}"
+            else:
+                formatted_username = username
+            filename=repo.full_name.replace("/", "_")
+            json_writer = JSONWriter(file_name=f'repo_data/{filename}.json')
             count += 1
             # if count > 3:
             #     break
@@ -88,27 +93,22 @@ def main(time_interval, token, lock):
             # get the pull requests
             for line in data:
                 if line['full_name'] == repo.full_name:
-                    print("repo already written")
+                    print(f"{line['full_name']}: repo already written")
                     read = True
                     break
                 
             if read:
                 continue
-            
+            json_name = repo.full_name.replace("/", "_")
             new_entry = {
                     "full_name": repo.full_name,
-                    "directory": f"repo/{repo.name}",
-                    "json_location": f"repo_data/{repo.name}.json",
+                    "directory": f"repo/{formatted_username}/{repo_name}",
+                    "json_location": f"repo_data/{json_name}.json",
                     "creation_date": repo.creation_date,
                     "stars": repo.stars,
                     "repo_topics": repo.topics
                 }
-            with lock:
-                with open(INDEX_FILE_PATH, "a") as f:
-                    json.dump(new_entry, f)
-                    f.write('\n')
-                    logger.info("write to index.jsonl")
-                    
+            
             repo.fetch_pr()
             time.sleep(3)
             # write to the csv
@@ -116,6 +116,14 @@ def main(time_interval, token, lock):
             # write to the jsonl
             json_writer.write(repo)
             logger.info(f"write {repo.full_name} data")
+            
+            with lock:
+                with open(INDEX_FILE_PATH, "a") as f:
+                    json.dump(new_entry, f)
+                    f.write('\n')
+                    logger.info("write to index.jsonl")
+                    
+
     
         print(f"Successfully written {count} repositories.")
 

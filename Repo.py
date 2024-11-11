@@ -9,7 +9,7 @@ from tenacity import (
     wait_random_exponential,
 )
 import random
-import shutil 
+import os
 class Repository:
     def __init__(self, full_name:str, name:str, url:str, stars:str, topics:list, creation_date:str, headers: dict):
         self.full_name = full_name
@@ -24,15 +24,17 @@ class Repository:
     @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
     def clone_from_github(self) -> None:
         try:
-            git.Repo.clone_from(self.url, f"repo/{self.name}")
+            if not os.path.exists(f"repo/{self.full_name}"):            
+                git.Repo.clone_from(self.url, f"repo/{self.full_name}")
+            else:
+                print(f"repo/{self.full_name} downloaded")
             # source_dir = self.name
             # dest_dir = "repo"
             # shutil.move(source_dir, dest_dir)
             # print(f"{self.full_name} downloaded successfully")
         except Exception as e:
             logger.error(f"Could not download file -- repo: {self.full_name}")
-            print(f"Could not download file {self.name}")
-            print(e)
+            print(f"Could not download file {self.full_name}")
     
 
     def fetch_modifications(self, commit_sha):

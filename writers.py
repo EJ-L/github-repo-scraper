@@ -3,7 +3,7 @@ import json
 from abc import ABC, abstractmethod
 from config import INFO
 from Repo import Repository
-
+import os 
 """ Base class for writers """
 class RepoWriter(ABC):
     @abstractmethod
@@ -30,8 +30,14 @@ class JSONWriter:
     def __init__(self, file_name):
         self.file_name = file_name
         self.first_item = True
-        self.file = open(self.file_name, 'a', encoding='utf-8')
+        # self.file = open(self.file_name, 'w', encoding='utf-8')
         # self.file.write('[')  # Start the JSON array
+        # Check if file already exists and has content
+        if os.path.exists(self.file_name) and os.path.getsize(self.file_name) > 0:
+            self.file = open(self.file_name, 'a', encoding='utf-8')  # Append if file exists
+            # self.first_item = False  # Assume it's not the first item if file exists
+        else:
+            self.file = open(self.file_name, 'w', encoding='utf-8')
 
     def write(self, repo):
         if not self.first_item:
